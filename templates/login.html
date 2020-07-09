@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+<body>
+
+
+{% if next %}
+    {% set action = '/login?next={{ next }}' %}
+{% else %}
+    {% set action = '/login' %}
+{% endif %}
+<form action="{{ action }}" method="post">
+    User: <input type="text" name="user"><br>
+    Pass: <input type="password" name="pass"><br>
+    <button type="submit" value="Log in"></button>
+</form>
+
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flask + PyAutoGui Remote Desktop via Browser</title>
+</head>
+<body onload="onLoad()">
+
+<script type="text/javascript">
+
+	var screenshot_img = document.getElementById('screenshot');
+	var container = document.getElementById('screenshotContainer');
+	var img_clicked_xy = [0, 0];
+
+	function onLoad() {
+		var x = document.getElementById('screenshot');
+		var timestamp = new Date().getTime();          
+		x.src = "/screenshot?t=" + timestamp; 
+	}
+
+
+	function translate() {
+
+		var pos = document.getElementById('screenshot').getBoundingClientRect();
+		var elePosX = pos.left;
+		var elePosY = pos.top;
+
+		// get window position relative to screen
+		var winPosX = window.screenX;
+		var winPosY = window.screenY;
+
+		// calculate the height of the navigation/toolbar
+		var navHeight = window.outerHeight - window.innerHeight;
+
+		// absolute x relative to the screens top left is the
+		//windows x position + the elements x position
+		var absX = winPosX + elePosX;
+
+		// absolute y relative to the screens top left is the
+		// windows y position + the height of the nav bar + the
+		// elements y position
+		var absY = winPosY + navHeight + elePosY;
+
+		// output values
+		//alert("x" + absX + " y" + absY);
+		return [absX, absY];
+	}
+
+
+	function sendClick(event) {
+
+		trans_xy = translate();
+		var x = event.offsetX;
+    	var y = event.offsetY;
+
+		var xhttp = new XMLHttpRequest();
+  		xhttp.onreadystatechange = function() {
+	    	if (this.readyState == 4 && this.status == 200) {
+	      		status = document.getElementById("status");
+	      		status.innerHTML += ''.parentPosition + "\n";
+	    	}
+  		};
+  		//var link = "/remote_desktop?x=" + (x + trans_xy[0]) + '&y=' + (y + trans_xy[1]);
+  		var link = "/remote_desktop?x=" + x + '&y=' + y;
+  		console.log("translate" + trans_xy + " link:" + link + "    x=" + x + " y=" + y);
+  		xhttp.open("POST", link, true);
+  		xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  		xhttp.send(); // fname=Henry&lname=Ford
+  		onLoad();
+	}
+
+var startTime = new Date();
+
+
+function mouseMove(event) {
+  endTime = new Date();
+  var timeDiff = endTime - startTime; //in ms
+
+  if (timeDiff > 500) {
+      startTime = endTime;
+
+      var x = event.offsetX;
+    	var y = event.offsetY;
+
+		var xhttp = new XMLHttpRequest();
+  		xhttp.onreadystatechange = function() {
+	    	if (this.readyState == 4 && this.status == 200) {
+	      		status = document.getElementById("status");
+	      		status.innerHTML += ''.parentPosition + "\n";
+	    	}
+  		};
+  		var link = "/mouse?x=" + x + '&y=' + y;
+  		xhttp.open("POST", link, true);
+  		xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  		xhttp.send();
+  		//onLoad();
+  }
+
+  console.log(seconds + " seconds");
+}
+
+
+function autocast() {
+  setInterval(function(){
+      document.getElementById('screenshot').src = "/screenshot?t=" + new Date().getTime();
+  }, 2000);
+}
+
+autocast();
+
+
+</script>
+
+<div id="screenshotContainer">
+	<img src="/screenshot" id="screenshot" width="{{server_width}}" height="{{server_height}}" onclick="sendClick(event);" onmousemove="mouseMove(event)">
+</div>
+
+<textarea id="status"></textarea>
+
+</body>
+</html>

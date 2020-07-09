@@ -1,0 +1,2 @@
+<class 'AttributeError'>
+'NoneType' object has no attribute 'write'

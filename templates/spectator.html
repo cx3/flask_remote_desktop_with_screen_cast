@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flask + PyAutoGui Remote Desktop via Browser</title>
+</head>
+<body>
+
+<script type="text/javascript">
+
+function cast() {
+  setInterval(function(){
+      document.getElementById('screenshot').src = "/screenshot?t=" + new Date().getTime();
+  }, 1000);
+}
+
+cast();
+
+</script>
+
+<div id="screenshotContainer">
+	<img src="/screenshot" id="screenshot" width="{{server_width}}" height="{{server_height}}">
+</div>
+
+<textarea id="status"></textarea>
+
+</body>
+</html>
