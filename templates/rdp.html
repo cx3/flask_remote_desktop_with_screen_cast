@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flask + PyAutoGui Remote Desktop via Browser</title>
+
+<style>
+	.keyboard {
+		border: 2px solid red;
+  		border-radius: 4px;
+  		width: 100%;
+  		flex: 1;
+  		background-color: #00aa00;
+  		color: #ca0000;
+  		border: 3px solid #555;
+  		height:100px;
+    	font-size:16pt;
+  	}
+</style>
+
+</head>
+<body>
+
+
+<div id="screenshotContainer">
+	<img src="/screenshot" id="screenshot" width="{{server_width}}" height="{{server_height}}" onclick="sendClick(event);"/>
+</div>
+
+
+<div style="display:flex;flex-direction:row">
+	<input type="text" class="keyboard" name="keyboard" id="keyboard">
+	<input type="button" name="send" id="semd" onclick="sendKeyboard();" value="Wyślij">
+</div>
+
+
+<div style="display:flex;flex-direction:row">
+	<input type="text" name="status" id="status" width="100%" style="flex:1">
+</div>
+
+
+<script type="text/javascript">
+
+
+function status(text) {
+	document.getElementById('status').value = text;
+}
+
+
+function cast() {
+  setInterval(function(){
+      document.getElementById('screenshot').src = "/screenshot?t=" + new Date().getTime();
+  }, 1000);
+}
+
+
+cast();
+
+
+function translate() {
+	var pos = document.getElementById("screenshot").getBoundingClientRect();
+	var elePosX = pos.left;
+	var elePosY = pos.top;
+
+    // get window position relative to screen
+    var winPosX = window.screenX;
+    var winPosY = window.screenY;
+
+    // calculate the height of the navigation/toolbar
+    var navHeight = window.outerHeight - window.innerHeight;
+
+    // absolute x relative to the screens top left is the
+    //windows x position + the elements x position
+    var absX = winPosX + elePosX;
+
+    // absolute y relative to the screens top left is the
+    // windows y position + the height of the nav bar + the
+    // elements y position
+    var absY = winPosY + navHeight + elePosY;
+
+    // output values
+    //alert("x" + absX + " y" + absY);
+    return [absX, absY];
+}
+
+
+function sendClick(event) {
+	trans_xy = translate();
+    var x = event.offsetX;
+    var y = event.offsetY;
+
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+    	if (this.readyState == 4 && this.status == 200) {
+    		console.log('sendClick() OK');
+     	}
+    };
+
+    var link = "/mouse?x=" + x + "&y=" + y + "&buttons=" + event.which;
+    status("sendClick(): translate " + trans_xy + " link: " + link);
+    xhttp.open("POST", link, true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send();
+}
+
+
+function sendKeyboard() {
+	var keyboard = document.getElementById('keyboard').value;
+	var xhttp = new XMLHttpRequest();
+    
+    xhttp.onreadystatechange = function () {
+    	if (this.readyState == 4 && this.status == 200) {
+    		status('/keyboard::response: ' + xhttp.response);
+     	}
+    };
+
+    var link = "/keyboard?keys=" + keyboard;
+    xhttp.open("POST", link, true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send();	
+}
+
+
+</script>
+
+
+
+</body>
+</html>
